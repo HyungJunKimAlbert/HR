@@ -4,7 +4,9 @@
 # Work Flow
 
 1. Image 필요없는 부분 제거 (그림판에서 흰색으로 지우기)
-2. 환자단위 Image 파일 read (rgb, gray(반전필요))
+2. 환자단위 Image 파일 read 
+  - Fetal Heart Rate(fhr) : rgb (3 channel)
+  - Uterine contraction : gray (1 channel, 반전필요)
 4. Image의 대략적인 좌표 설정 (target box의 x축, y축 좌표구해서 추가)
 5. phl 알고리즘에 의한 정밀한 box boundary 설정 (Threshold 설정 필요: 너무 높으면 남는 선이 거의 없고, 너무 낮으면 대부분의 선이 선택됨.)
 6. Image 전체길이 구함
