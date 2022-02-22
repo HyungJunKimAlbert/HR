@@ -53,6 +53,7 @@ def scaler(data, h_pix, h_size, baseline=0, cut=False):
 
 base_path = pathlib.Path('data_preprocessed')
 
+# fetal bounding box
 xl, xr, fhr_yt, fhr_yb = 35, 730, 110, 330
 uc_yt, uc_yb = 335, 480
 length_list = []
@@ -92,7 +93,8 @@ for p in pid_list:
         h_angle = angle[1:]
         v_theta = np.array(v_angle, dtype='double')
         h_theta = np.array(h_angle, dtype='double')
-
+        # threshold 클수록 linewidth 큰 픽셀만 잡혀서 추출되는 선이 줄어듦.
+        # line_length 클수록 긴 line만 잡혀서 추출되는 선이 줄어듦.
         v_phl = phl(fhr_box, threshold=150, line_length=100, theta=v_theta)
         h_phl = phl(fhr_box, threshold=200, line_length=200, theta=h_theta)
         h_phl_uc = phl(uc_box, threshold=200, line_length=200, theta=h_theta)
@@ -119,9 +121,12 @@ for p in pid_list:
         uc_box_color = color[uc_yt_new:uc_yb_new, xl_new:xr_new]
         # simple_show(color[fhr_yt_new:fhr_yb_new, xl_new:xr_new], figsize=(10,5))
         # simple_show(color[uc_yt_new:uc_yb_new, xl_new:xr_new], figsize=(10,5))
-
+        
+        # color : threhold가 커질수록 진한 픽셀만 남음. (채도 큰 필셀만 남음)
+        # 800 값 클수록 흰색에 가까운 픽셀이 잡힘. 
+        
         fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=40, upper=True, minimum_pix=50)
-        fhr_green = np.sum(fhr_box_color, axis=2) < 800
+        fhr_green = np.sum(fhr_box_color, axis=2) < 800     # 변수명 green 이지만, 실제로는 sum 값임.
         # simple_show(fhr_std, figsize=(10, 5))
         # simple_show(fhr_green, figsize=(10, 5))
 
@@ -187,7 +192,7 @@ for p in pid_list:
     data.to_csv(f'C:/Users/User5/Desktop/github/HR/result/{p}.csv', index=False)
 
     total_pix = len(list(base_path.glob(f'{p}*.png'))) * (xr_new-xl_new)
-    total_sec = len(list(base_path.glob(f'{p}*.png'))) * 60 * 8
+    total_sec = len(list(base_path.glob(f'{p}*.png'))) * 60 * 8     # waveform 길이 (몇분인지)
     nni = np.array([60/f for f in fhr if f is not None])
     # print(nni)
 
