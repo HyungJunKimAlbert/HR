@@ -217,3 +217,10 @@ for p in pid_list:
 hrv_df = pd.DataFrame(hrv_data, columns=['pid','sdnn','sdann','rmssd','sdsd','pnn50','pnn20','vlf','lf','hf','lf/hf','vlf_peak',
     'lf_peak','hf_peak','vlf_rel','lf_rel','hf_rel','sd1','sd2','sd_ratio','sampen','dfa_a1','dfa_a2','a_ratio'])
 hrv_df.to_csv(f'C:/Users/User5/Desktop/github/HR/result/hrv.csv', index=False)
+
+
+
+# MHR이 보라색 선이여서 찾기 어려움.
+# FHR box가 grid 색이 분홍색이여서 MHR 픽셀값이랑 비슷함.
+
+
