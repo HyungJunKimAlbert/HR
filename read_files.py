@@ -52,6 +52,7 @@ def scaler(data, h_pix, h_size, baseline=0, cut=False):
     return HR
 
 base_path = pathlib.Path('data_preprocessed')
+data_type = ''
 
 # fetal bounding box
 xl, xr, fhr_yt, fhr_yb = 3, 1102, 167, 504
@@ -126,15 +127,22 @@ for p in pid_list:
         # simple_show(color[fhr_yt_new:fhr_yb_new, xl_new:xr_new], figsize=(10,5))
         # simple_show(color[uc_yt_new:uc_yb_new, xl_new:xr_new], figsize=(10,5))
         
-        # color : threhold가 커질수록 진한 픽셀만 남음. (채도 큰 필셀만 남음)
-        # 800 값 클수록 흰색에 가까운 픽셀이 잡힘. 
-        
-        fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=40, upper=True, minimum_pix=50)
-        fhr_green = np.sum(fhr_box_color, axis=2) < 800     # 변수명 green 이지만, 실제로는 sum 값임.
+
+        if data_type == 'twin':       # Red & Blue Lines... (Twin Fetal)
+            # color : threhold가 커질수록 진한 픽셀만 남음. (채도 큰 필셀만 남음)
+            # 800 값 클수록 흰색에 가까운 픽셀이 잡힘. 
+            fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=30, upper=True, minimum_pix=50)
+            fhr_blue = (fhr_box_color[:,:,0] < 100) & (fhr_box_color[:,:,1] < 100) & (fhr_box_color[:,:,2] >= 140)
+            HR_raw = np.all([fhr_std, fhr_blue], axis=0)   # Red line
+
+        else:       # Only Red Lines... (Not Twin Fetal)
+            fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=30, upper=True, minimum_pix=50)
+            fhr_red = np.sum(fhr_box_color, axis=2) < 800     # 변수명 green 이지만, 실제로는 sum 값임.
+            HR_raw = np.all([fhr_std, fhr_red], axis=0)   # Red line
+
         # simple_show(fhr_std, figsize=(10, 5))
         # simple_show(fhr_green, figsize=(10, 5))
 
-        HR_raw = np.all([fhr_std, fhr_green], axis=0)
         # simple_show(HR_raw, figsize=(10, 5))
 
         # HR_raw = abstracter(HR_raw, x_range=avg_length-1, x_screen=0, y_screen=0)
