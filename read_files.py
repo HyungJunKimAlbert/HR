@@ -54,22 +54,26 @@ def scaler(data, h_pix, h_size, baseline=0, cut=False):
 base_path = pathlib.Path('data_preprocessed')
 
 # fetal bounding box
-xl, xr, fhr_yt, fhr_yb = 35, 730, 110, 330
-uc_yt, uc_yb = 335, 480
+xl, xr, fhr_yt, fhr_yb = 3, 1102, 167, 504
+uc_yt, uc_yb = 546, 800
+# xl, xr, fhr_yt, fhr_yb = 35, 730, 110, 330
+# uc_yt, uc_yb = 335, 480
 length_list = []
-avg_length = 660
+avg_length = 1100
 pid_list = set()
 
 for i in base_path.glob('*.png'):
     name = i.stem.split('(')[0]
     pid_list.add(name)
 
+print('Patient id: ', pid_list)
+
 hrv_data = None
 for p in pid_list:
     l = []
     l_uc = []
     for idx, i in enumerate(base_path.glob(f'{p}*.png')):
-        print(i.stem.split('(')[-1][:-1])
+        print('file number: ', i.stem.split('(')[-1][:-1])
         series = int(i.stem.split('(')[-1][:-1])
         color = imread(i)
         gray = rgb2gray(color)
@@ -165,21 +169,21 @@ for p in pid_list:
     for f in l:
         fhr.extend(f[1])
         print(len(fhr))
-    # plt.figure(figsize=(25,3))
-    # plt.xlim([0, avg_length*len(l)])
-    # plt.ylim([30,240])
-    # plt.plot(fhr)
-    # plt.show()
+    plt.figure(figsize=(25,3))
+    plt.xlim([0, avg_length*len(l)])
+    plt.ylim([30,240])
+    plt.plot(fhr)
+    plt.show()
     # plt.close()
 
     uc = []
     for u in l_uc:
         uc.extend(u[1])
-    # plt.figure(figsize=(25,3))
-    # plt.xlim([0,avg_length*len(l_uc)])
-    # plt.ylim([0, 100])
-    # plt.plot(uc)
-    # plt.show()
+    plt.figure(figsize=(25,3))
+    plt.xlim([0,avg_length*len(l_uc)])
+    plt.ylim([0, 100])
+    plt.plot(uc)
+    plt.show()
     # plt.close()
 
     # # print(l)
@@ -189,7 +193,7 @@ for p in pid_list:
     data = pd.DataFrame(zip(fhr, uc), columns=['FHR','UC'])
     # data.plot(figsize=(25,3))
     # plt.show()
-    data.to_csv(f'C:/Users/User5/Desktop/github/HR/result/{p}.csv', index=False)
+    data.to_csv(f'/Users/kimhyungjun/Documents/github/HR/result/data_{p}.csv', index=False)
 
     total_pix = len(list(base_path.glob(f'{p}*.png'))) * (xr_new-xl_new)
     total_sec = len(list(base_path.glob(f'{p}*.png'))) * 60 * 8     # waveform 길이 (몇분인지)
@@ -216,7 +220,7 @@ for p in pid_list:
 
 hrv_df = pd.DataFrame(hrv_data, columns=['pid','sdnn','sdann','rmssd','sdsd','pnn50','pnn20','vlf','lf','hf','lf/hf','vlf_peak',
     'lf_peak','hf_peak','vlf_rel','lf_rel','hf_rel','sd1','sd2','sd_ratio','sampen','dfa_a1','dfa_a2','a_ratio'])
-hrv_df.to_csv(f'C:/Users/User5/Desktop/github/HR/result/hrv.csv', index=False)
+hrv_df.to_csv(f'/Users/kimhyungjun/Documents/github/HR/result/hrv_{p}.csv', index=False)
 
 
 
