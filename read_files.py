@@ -131,13 +131,14 @@ for p in pid_list:
         if data_type == 'twin':       # Red & Blue Lines... (Twin Fetal)
             # color : threhold가 커질수록 진한 픽셀만 남음. (채도 큰 필셀만 남음)
             # 800 값 클수록 흰색에 가까운 픽셀이 잡힘. 
-            fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=30, upper=True, minimum_pix=50)
+            fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=20, upper=True, minimum_pix=50)
             fhr_blue = (fhr_box_color[:,:,0] < 100) & (fhr_box_color[:,:,1] < 100) & (fhr_box_color[:,:,2] >= 140)
             HR_raw = np.all([fhr_std, fhr_blue], axis=0)   # Red line
 
         else:       # Only Red Lines... (Not Twin Fetal)
-            fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=30, upper=True, minimum_pix=50)
-            fhr_red = np.sum(fhr_box_color, axis=2) < 800     # 변수명 green 이지만, 실제로는 sum 값임.
+            fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=37, upper=True, minimum_pix=50)
+            fhr_red = np.sum(fhr_box_color, axis=2) < 800   
+            # fhr_red =(fhr_box_color[:,:,0] > 150) & (fhr_box_color[:,:,1] < 80) & (fhr_box_color[:,:,2] < 80)
             HR_raw = np.all([fhr_std, fhr_red], axis=0)   # Red line
 
         # simple_show(fhr_std, figsize=(10, 5))
