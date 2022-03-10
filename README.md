@@ -14,3 +14,15 @@
 8. scaler 이용해서 보고싶은 곳만 잘라서 환자ID와 Image pair-wise 하게 저장
 9. 위 과정에서 구한 waveform을 csv 로 저장
 10. fhr 에서 nni 구한 후, HRV 계산하여 csv 로 저장
+
+
+---
+
+
+* completed patients 
+
+  - 2/22 : 3
+  - 2/25 : 10 (Twin 1)
+  - 2/28 : 6 
+  - 3/7 : 6명
+  - 3/10 : 9명
