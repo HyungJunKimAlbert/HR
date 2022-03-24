@@ -63,14 +63,14 @@ def scaler(data, h_pix, h_size, baseline=0, cut=False):
 
 
 base_path = pathlib.Path('data_preprocessed')
-data_type = ''
+data_type = 'twi'
 
 # fetal bounding box
-xl, xr, fhr_yt, fhr_yb = 20, 800, 130, 380
-uc_yt, uc_yb = 400, 550
+xl, xr, fhr_yt, fhr_yb = 0, 1612, 0, 475
+uc_yt, uc_yb = 550, 835
 
-# xl, xr, fhr_yt, fhr_yb = 35, 730, 110, 330
-# uc_yt, uc_yb = 335, 480
+
+
 length_list = []
 avg_length = 1100
 pid_list = set()
@@ -147,15 +147,14 @@ for p in pid_list:
         if data_type == 'twin':       # Red & Blue Lines... (Twin Fetal)
             # color : threhold가 커질수록 진한 픽셀만 남음. (채도 큰 필셀만 남음)
             # 800 값 클수록 흰색에 가까운 픽셀이 잡힘.
-            fhr_std = filtering_by_std(
-                fhr_box_color, axis=2, threshold=30, upper=True, minimum_pix=50)
+            fhr_std = filtering_by_std(fhr_box_color, axis=2, threshold=20, upper=True, minimum_pix=50)
             fhr_blue = (fhr_box_color[:, :, 0] < 100) & (
                 fhr_box_color[:, :, 1] < 100) & (fhr_box_color[:, :, 2] >= 140)
             HR_raw = np.all([fhr_std, fhr_blue], axis=0)   # Blue line
 
         else:       # Only Red Lines... (Not Twin Fetal)
             fhr_std = filtering_by_std(
-                fhr_box_color, axis=2, threshold=20, upper=True, minimum_pix=50)
+                fhr_box_color, axis=2, threshold=25, upper=True, minimum_pix=50)
             # fhr_red = np.sum(fhr_box_color, axis=2) < 800     # TJ's Codes... (Use Pixel Std)
             # FHR RGB value >>>  center (R,G,B) : (179, 59, 70),  edge (R,G,B) = (188, 139, 142)           2 # HJ's Codes... (Use Pixel Range)  (R,G,B) = (191, 92, 97)
             fhr_red = (fhr_box_color[:, :, 0] > 161) & (fhr_box_color[:, :, 0] < 221) \
@@ -163,12 +162,12 @@ for p in pid_list:
                 & (fhr_box_color[:, :, 2] > 67) & (fhr_box_color[:, :, 2] < 127)
 
             HR_raw = np.all([fhr_std, fhr_red], axis=0)   # FHR lines....
+
         # MHR RBG value >>> center (R,G,B) : (197, 119, 200) , edge (R,G,B) : (225,200,230)    # MHR 추가 (3/14)
-        mhr_std = filtering_by_std(
-            mhr_box_color, axis=2, threshold=10, upper=True, minimum_pix=50)
-        mhr_purple = (mhr_box_color[:, :, 0] > 167) & (mhr_box_color[:, :, 0] < 227) \
-            & (mhr_box_color[:, :, 1] > 89) & (mhr_box_color[:, :, 1] < 149) \
-            & (mhr_box_color[:, :, 2] > 170) & (mhr_box_color[:, :, 2] < 240)
+        mhr_std = filtering_by_std(mhr_box_color, axis=2, threshold=15, upper=True, minimum_pix=50)
+        mhr_purple = (mhr_box_color[:, :, 0] > 160) & (mhr_box_color[:, :, 0] < 230) \
+            & (mhr_box_color[:, :, 1] > 90) & (mhr_box_color[:, :, 1] < 150) \
+            & (mhr_box_color[:, :, 2] > 180) & (mhr_box_color[:, :, 2] < 230)
 
         # MHR lines....     # MHR 추가 (3/14)
         MHR_raw = np.all([mhr_std, mhr_purple], axis=0)
@@ -185,8 +184,7 @@ for p in pid_list:
                     baseline=30, cut=False)  # 142ppi
 
         MHR_raw = abstracter(MHR_raw, x_range=length-1, x_screen=0, y_screen=0)
-        MHR = scaler(MHR_raw, fhr_yb_new-fhr_yt_new, 210,
-                     baseline=30, cut=False)  # 142ppi
+        MHR = scaler(MHR_raw, fhr_yb_new-fhr_yt_new, 210, baseline=30, cut=False)  # 142ppi
 
         # print(HR)
         # plt.figure(figsize=(10,5))        # FHR
@@ -265,11 +263,32 @@ for p in pid_list:
     # # avg_length = np.array(length_list).mean()
     # # print(int(avg_length))
 
+    ''' interpolation (List --> DataFrame --> Interpolate --> List again) '''
+    # tmp_fhr = pd.DataFrame()
+    # tmp_mhr = pd.DataFrame()
+    # tmp_uc = pd.DataFrame()
+
+    # tmp_fhr['fhr'] = fhr
+    # tmp_mhr['mhr'] = mhr
+    # tmp_uc['uc'] = uc
+
+    # tmp_fhr = tmp_fhr.interpolate(method='linear')
+    # tmp_mhr = tmp_mhr.interpolate(method='linear')
+    # tmp_uc = tmp_uc.interpolate(method='linear')
+
+    # fhr = list(tmp_fhr['fhr'])
+    # mhr = list(tmp_mhr['mhr'])
+    # uc = list(tmp_uc['uc'])
+
     data = pd.DataFrame(zip(fhr, mhr, uc), columns=['FHR', 'MHR', 'UC'])
-    data.plot(figsize=(25, 3))
+    data.plot(figsize=(30, 3))
+    plt.savefig(f'C:/Users/User5/Desktop/github/HR/result/waveplot_{p}.png', dpi=500)
     plt.show()
-    data.to_csv(
-        f'/Users/kimhyungjun/Documents/github/HR/result/data_{p}.csv', index=False)
+
+
+    data.to_csv(f'C:/Users/User5/Desktop/github/HR/result/raw_data_{p}.csv', index=False)
+
+
 
     total_pix = len(list(base_path.glob(f'{p}*.png'))) * (xr_new-xl_new)
     # waveform 길이 (몇분인지)
@@ -303,15 +322,18 @@ for p in pid_list:
                                                         lf_peak, hf_peak, vlf_rel, lf_rel, hf_rel, sd1, sd2, sd_ratio, sampen, dfa_a1, dfa_a2, a_ratio]])))
 
     hrv_df = pd.DataFrame(hrv_data, columns=['pid', 'sdnn', 'sdann', 'rmssd', 'sdsd', 'pnn50', 'pnn20', 'vlf', 'lf', 'hf', 'lf/hf',
-                                             'vlf_peak', 'lf_peak', 'hf_peak', 'vlf_rel', 'lf_rel', 'hf_rel', 'sd1', 'sd2', 'sd_ratio', 'sampen', 'dfa_a1', 'dfa_a2', 'a_ratio'])
-    hrv_df.to_csv(
-        f'/Users/kimhyungjun/Documents/github/HR/result/FHR_hrv_{p}.csv', index=False)
+                                            'vlf_peak', 'lf_peak', 'hf_peak', 'vlf_rel', 'lf_rel', 'hf_rel', 'sd1', 'sd2', 'sd_ratio', 'sampen', 'dfa_a1', 'dfa_a2', 'a_ratio'])
+    hrv_df.to_csv(f'C:/Users/User5/Desktop/github/HR/result/FHR_hrv_{p}.csv', index=False)
+
 
     # MHR HRV
     total_pix = len(list(base_path.glob(f'{p}*.png'))) * (xr_new-xl_new)
     # waveform 길이 (몇분인지)
     total_sec = len(list(base_path.glob(f'{p}*.png'))) * 60 * 8
     nni = np.array([60/f for f in mhr if f is not None])
+    # pd.DataFrame(nni).to_csv('./test.csv')
+    # print(len(nni))
+    # print(nni)
 
     result = hrv(nni=nni, sampling_rate=total_pix/total_sec, show=False)
     sdnn, sdann, rmssd, sdsd, nn50, pnn50, nn20, pnn20 = result['sdnn'], result['sdann'], result[
@@ -328,12 +350,12 @@ for p in pid_list:
 
     if hrv_data2 is None:
         hrv_data2 = np.array([[p, sdnn, sdann, rmssd, sdsd, pnn50, pnn20, vlf, lf, hf, lf_hf, vlf_peak,
-                               lf_peak, hf_peak, vlf_rel, lf_rel, hf_rel, sd1, sd2, sd_ratio, sampen, dfa_a1, dfa_a2, a_ratio]])
+                                lf_peak, hf_peak, vlf_rel, lf_rel, hf_rel, sd1, sd2, sd_ratio, sampen, dfa_a1, dfa_a2, a_ratio]])
     else:
         hrv_data2 = np.concatenate((hrv_data2, np.array([[p, sdnn, sdann, rmssd, sdsd, pnn50, pnn20, vlf, lf, hf, lf_hf, vlf_peak,
-                                                          lf_peak, hf_peak, vlf_rel, lf_rel, hf_rel, sd1, sd2, sd_ratio, sampen, dfa_a1, dfa_a2, a_ratio]])))
+                                                        lf_peak, hf_peak, vlf_rel, lf_rel, hf_rel, sd1, sd2, sd_ratio, sampen, dfa_a1, dfa_a2, a_ratio]])))
 
     hrv_df2 = pd.DataFrame(hrv_data2, columns=['pid', 'sdnn', 'sdann', 'rmssd', 'sdsd', 'pnn50', 'pnn20', 'vlf', 'lf', 'hf', 'lf/hf',
-                                               'vlf_peak', 'lf_peak', 'hf_peak', 'vlf_rel', 'lf_rel', 'hf_rel', 'sd1', 'sd2', 'sd_ratio', 'sampen', 'dfa_a1', 'dfa_a2', 'a_ratio'])
-    hrv_df2.to_csv(
-        f'/Users/kimhyungjun/Documents/github/HR/result/MHR_hrv_{p}.csv', index=False)
+                                            'vlf_peak', 'lf_peak', 'hf_peak', 'vlf_rel', 'lf_rel', 'hf_rel', 'sd1', 'sd2', 'sd_ratio', 'sampen', 'dfa_a1', 'dfa_a2', 'a_ratio'])
+    hrv_df2.to_csv(f'C:/Users/User5/Desktop/github/HR/result/MHR_hrv_{p}.csv', index=False)
+
